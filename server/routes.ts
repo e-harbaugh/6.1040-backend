@@ -14,7 +14,27 @@ import { z } from "zod";
  */
 class Routes {
   // Synchronize the concepts from `app.ts`.
-
+  @Router.post("/users/relations")
+  @Router.get("/users/relations")
+  @Router.delete("/users/relations")
+  @Router.post("/users/relations/:relation")
+  @Router.get("/users/relations/:relation")
+  @Router.delete("/users/relations/:relation")
+  @Router.post("/posts/:id/replies")
+  @Router.get("/posts/:id/replies")
+  @Router.delete("/posts/:id/replies")
+  @Router.post("/posts/:id/collaborators")
+  @Router.get("/posts/:id/collaborators")
+  @Router.delete("/posts/:id/collaborators")
+  @Router.post("/users/:username/invites")
+  @Router.get("/users/:username/invites")
+  @Router.delete("/users/:username/invites")
+  @Router.post("/communities")
+  @Router.get("/communities")
+  @Router.delete("/communities")
+  @Router.post("/communities/users")
+  @Router.get("/communities/users")
+  @Router.delete("/communities/users")
   @Router.get("/session")
   async getSessionUser(session: SessionDoc) {
     const user = Sessioning.getUser(session);

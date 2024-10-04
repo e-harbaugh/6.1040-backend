@@ -15,6 +15,12 @@ type Operation = {
  */
 const operations: Operation[] = [
   {
+    name: "Invite Colab",
+    endpoint: "/api/users/:user/invites",
+    method: "POST",
+    fields: { user: "input", thing: "input" },
+  },
+  {
     name: "Get Session User (logged in user)",
     endpoint: "/api/session",
     method: "GET",
