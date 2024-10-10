@@ -31,6 +31,11 @@ export default class PostingConcept {
     return { msg: "Post successfully created!", post: await this.posts.readOne({ _id }) };
   }
 
+  async getPostByID(post_id: string) {
+    const postWrapper = new ObjectId(post_id);
+    return await this.posts.readOne({ postWrapper });
+  }
+
   async getPosts() {
     // Returns all posts! You might want to page for better client performance
     return await this.posts.readMany({}, { sort: { _id: -1 } });

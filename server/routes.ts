@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Sessioning } from "./app";
+import { Authing, Friending, Posting, Relationshipping, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -15,12 +15,48 @@ import { z } from "zod";
 class Routes {
   // Synchronize the concepts from `app.ts`.
   @Router.post("/users/relations")
+  async createRelationship(session: SessionDoc, name: string) {
+    const user = Sessioning.getUser(session);
+    const created = await Relationshipping.createRelationship(user, name);
+    return { msg: created.msg, get: created.relation };
+  }
   @Router.get("/users/relations")
+  async getRelationships(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    const relations = await Relationshipping.getRelationships(user);
+    return { msg: relations.msg, get: relations.relations };
+  }
   @Router.delete("/users/relations")
+  async deleteRelationship(session: SessionDoc, relationship: string) {
+    const user = Sessioning.getUser(session);
+    const msg = await Relationshipping.deleteRelationship(user, relationship);
+    return { msg: msg.msg };
+  }
   @Router.post("/users/relations/:relation")
+  async relate(session: SessionDoc, target: string, relation: string) {
+    const user = Sessioning.getUser(session);
+    const target_id = (await Authing.getUserByUsername(target))._id;
+    const created = await Relationshipping.relate(user, target_id, relation);
+    return { msg: created.msg };
+  }
   @Router.get("/users/relations/:relation")
+  async getRelatedUsers(session: SessionDoc, relation: string) {
+    const user = Sessioning.getUser(session);
+    const relations = await Relationshipping.getRelatedUsers(user, relation);
+    return { msg: relations.msg, get: relations.relatedUsers };
+  }
   @Router.delete("/users/relations/:relation")
+  async unrelate(session: SessionDoc, target: string, relation: string) {
+    const user = Sessioning.getUser(session);
+    const target_id = (await Authing.getUserByUsername(target))._id;
+    const msg = await Relationshipping.unrelate(user, target_id, relation);
+    return { msg: msg.msg };
+  }
   @Router.post("/posts/:id/replies")
+  async reply(session: SessionDoc, id: string, content: string, isImage?: boolean) {
+    const user = Sessioning.getUser(session);
+    //const poster = Posting.
+  }
   @Router.get("/posts/:id/replies")
   @Router.delete("/posts/:id/replies")
   @Router.post("/posts/:id/collaborators")

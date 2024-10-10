@@ -15,6 +15,18 @@ type Operation = {
  */
 const operations: Operation[] = [
   {
+    name: "Create Relation",
+    endpoint: "/api/users/relations",
+    method: "POST",
+    fields: { name: "input" },
+  },
+  {
+    name: "Get Relations",
+    endpoint: "/api/users/relations",
+    method: "GET",
+    fields: {},
+  },
+  {
     name: "Invite Colab",
     endpoint: "/api/users/:user/invites",
     method: "POST",
