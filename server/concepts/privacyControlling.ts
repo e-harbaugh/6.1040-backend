@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { NotFoundError } from "./errors";
+import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface PrivacyAttributeDoc extends BaseDoc {
   thing: ObjectId;
@@ -42,20 +42,44 @@ export default class PrivacyControllingConcept {
     return { msg: "Attribute Assigned!" };
   }
 
-  async valueSatisfies(thing: ObjectId, attributeName: string, value: string) {
+  //This function returns true if no attributeName is found
+  async anyValueSatisfies(thing: ObjectId, attributeName: string, values: string[]) {
     const attribute = await this.privacyAttributes.readOne({ thing, attributeName });
     if (attribute == null) {
-      throw new NotFoundError(attributeName);
+      return true;
     }
     const oid = attribute._id;
     const curAttributeValues = await this.attributeValues.readMany({ privacyAttribute: oid });
     let found = false;
     for (let i = 0; i < curAttributeValues.length; i++) {
-      if (value === curAttributeValues[i].value) {
-        found = true;
+      for (let j = 0; j < values.length; j++) {
+        if (values[j] === curAttributeValues[i].value) {
+          found = true;
+        }
       }
     }
     return { msg: "Values Checked!", satisfies: found };
+  }
+
+  async assertAnyValueSatisfies(thing: ObjectId, attributeName: string, values: string[]) {
+    const attribute = await this.privacyAttributes.readOne({ thing, attributeName });
+    if (attribute == null) {
+      return true;
+    }
+    const oid = attribute._id;
+    const curAttributeValues = await this.attributeValues.readMany({ privacyAttribute: oid });
+    let found = false;
+    for (let i = 0; i < curAttributeValues.length; i++) {
+      for (let j = 0; j < values.length; j++) {
+        if (values[j] === curAttributeValues[i].value) {
+          found = true;
+        }
+      }
+    }
+    if (!found) {
+      throw new UnsatisfiedError(attributeName, values);
+    }
+    return { msg: "Satisfied Asserted!" };
   }
 
   async deleteAttribute(thing: ObjectId, attributeName: string) {
@@ -76,5 +100,24 @@ export default class PrivacyControllingConcept {
     const oid = attribute._id;
     const attributeValues = await this.attributeValues.readMany({ privacyAttribute: oid });
     return { msg: "attributes Queried!", attributeValues: attributeValues };
+  }
+}
+
+export class InvalidActionError extends NotAllowedError {
+  constructor(
+    public readonly user: ObjectId,
+    public readonly action: string,
+    public readonly object: ObjectId,
+  ) {
+    super("{0} cannot perform {1} on {2}!", user, action, object);
+  }
+}
+
+export class UnsatisfiedError extends NotAllowedError {
+  constructor(
+    public readonly attributeName: string,
+    public readonly values: string[],
+  ) {
+    super("{0} is not satisfied by {1}!", attributeName, values);
   }
 }

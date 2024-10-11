@@ -2,12 +2,13 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Relationshipping, Sessioning } from "./app";
+import { Authing, Friending, Posting, PrivacyControlling, Relationshipping, Replying, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
 import { z } from "zod";
+import { RelationshipDoc } from "./concepts/relationshipping";
 
 /**
  * Web server routes for the app. Implements synchronizations between concepts.
@@ -54,11 +55,29 @@ class Routes {
   }
   @Router.post("/posts/:id/replies")
   async reply(session: SessionDoc, id: string, content: string, isImage?: boolean) {
-    const user = Sessioning.getUser(session);
-    //const poster = Posting.
+    //We need to check if the user is allowed to post a reply by the poster's settings
+    this.checkRelationPermission(session, id, "reply");
+
+    //Now Start Reply
+    const post = await Posting.getPostByID(id);
+    const replyMsg = await Replying.createReply(content, isImage);
+    const msg = await Replying.assignReply(post.post._id, replyMsg.reply_id);
+    return { msg: msg.msg };
   }
   @Router.get("/posts/:id/replies")
-  @Router.delete("/posts/:id/replies")
+  async getReplies(session: SessionDoc, id: string) {
+    //We need to check if the user is allowed to by the poster's settings
+    this.checkRelationPermission(session, id, "readReplies");
+
+    //Now Start Reply
+    const replies = await Replying.getReplyByObject(new ObjectId(id));
+    return { msg: replies.msg, replies: replies.replies };
+  }
+  @Router.delete("/posts/:id/replies/:replyid")
+  async deleteReply(session: SessionDoc, id: string, replyid: string) {
+    //Here the settings actually depend on the reply's permissions
+    this.checkRelationPermission(session, replyid, "delete");
+  }
   @Router.post("/posts/:id/collaborators")
   @Router.get("/posts/:id/collaborators")
   @Router.delete("/posts/:id/collaborators")
@@ -207,6 +226,15 @@ class Routes {
     const user = Sessioning.getUser(session);
     const fromOid = (await Authing.getUserByUsername(from))._id;
     return await Friending.rejectRequest(fromOid, user);
+  }
+
+  async checkRelationPermission(session: SessionDoc, object_id: string, checkPrivacyAttribute: string) {
+    const user = Sessioning.getUser(session);
+    const post = await Posting.getPostByID(object_id);
+    const poster = post.post.author;
+    const relations = await Relationshipping.getRelationship(poster, user);
+    const relationNames = relations.relations.map((x: RelationshipDoc) => x.relationName);
+    PrivacyControlling.assertAnyValueSatisfies(post.post._id, checkPrivacyAttribute, relationNames);
   }
 }
 

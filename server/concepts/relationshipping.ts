@@ -65,7 +65,7 @@ export default class RelationshippingConcept {
       let oid = curRelation._id;
       let checkRelation = await this.relatedUsers.readOne({ relationship: oid, target });
       if (!checkRelation == null) {
-        sharedRelations.push(checkRelation);
+        sharedRelations.push(curRelation);
       }
     }
     return { msg: "Relations Queried!", relations: sharedRelations };
