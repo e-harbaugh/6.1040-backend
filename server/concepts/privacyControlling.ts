@@ -45,7 +45,7 @@ export default class PrivacyControllingConcept {
   //This function returns true if no attributeName is found
   async anyValueSatisfies(thing: ObjectId, attributeName: string, values: string[]) {
     const attribute = await this.privacyAttributes.readOne({ thing, attributeName });
-    if (attribute == null) {
+    if (!attribute) {
       return true;
     }
     const oid = attribute._id;

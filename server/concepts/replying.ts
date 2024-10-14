@@ -28,7 +28,7 @@ export default class ReplyingConcept {
   }
 
   async createReply(content: string, isImage = false) {
-    const _id = await this.replies.createOne({ content, isImage });
+    const _id = await this.replies.createOne({ content: content, isImage: isImage });
     return { msg: "Reply Created!", reply_id: _id };
   }
 
@@ -38,9 +38,9 @@ export default class ReplyingConcept {
   }
 
   async assignReply(object: ObjectId, reply: ObjectId) {
-    const postReply = await this.replies.readOne({ reply });
+    const postReply = await this.replies.readOne({ _id: reply });
     if (postReply == null) {
-      throw new NotFoundError(reply.toString());
+      throw new NotFoundError("Reply Object not Found: {0}", reply.toString());
     }
     await this.objectReplies.createOne({ object: object, reply: reply });
     return { msg: "Reply Assigned!" };

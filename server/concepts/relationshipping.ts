@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { NotFoundError } from "./errors";
+import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface RelationshipDoc extends BaseDoc {
   user: ObjectId;
@@ -28,14 +28,19 @@ export default class RelationshippingConcept {
   }
 
   async createRelationship(user: ObjectId, relationName: string) {
+    //Make sure no other relations with name
+    const nameCheck = await this.relationTypes.readMany({ user: user, relationName: relationName });
+    if (!(nameCheck.length == 0)) {
+      throw new NotAllowedError("Cannot duplicate relation name: {0}", relationName);
+    }
     const _id = await this.relationTypes.createOne({ user, relationName });
     return { msg: "Relation Created!", relation: await this.relationTypes.readOne({ _id }) };
   }
 
   async relate(creator: ObjectId, target: ObjectId, relationName: string) {
-    const relation = await this.relationTypes.readOne({ user: creator, relationName });
+    const relation = await this.relationTypes.readOne({ user: creator, relationName: relationName });
     if (relation == null) {
-      throw new NotFoundError(relationName);
+      throw new NotFoundError("Relation name not found: {0}", relationName);
     }
     const relationship = relation._id;
     await this.relatedUsers.createOne({ relationship, target });
@@ -43,9 +48,9 @@ export default class RelationshippingConcept {
   }
 
   async unrelate(creator: ObjectId, target: ObjectId, relationName: string) {
-    const relation = await this.relationTypes.readOne({ user: creator, relationName });
+    const relation = await this.relationTypes.readOne({ user: creator, relationName: relationName });
     if (relation == null) {
-      throw new NotFoundError(relationName);
+      throw new NotFoundError("Relation name not found: {0}", relationName);
     }
     const relationship = relation._id;
     await this.relatedUsers.deleteOne({ relationship, target });
@@ -77,12 +82,12 @@ export default class RelationshippingConcept {
   }
 
   async getRelatedUsers(creator: ObjectId, relationName: string) {
-    const relation = await this.relationTypes.readOne({ creator, relationName });
+    const relation = await this.relationTypes.readOne({ user: creator, relationName: relationName });
     if (relation == null) {
       throw new NotFoundError(relationName);
     }
     const oid = relation._id;
-    const relatedUsers = await this.relatedUsers.readMany({ Relationship: oid });
+    const relatedUsers = await this.relatedUsers.readMany({ relationship: oid });
     return { msg: "Relations Queried!", relatedUsers: relatedUsers };
   }
 }

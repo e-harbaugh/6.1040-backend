@@ -14,6 +14,7 @@ type Operation = {
  * This list of operations is used to generate the manual testing UI.
  */
 const operations: Operation[] = [
+  //Relations
   {
     name: "Create Relation",
     endpoint: "/api/users/relations",
@@ -27,11 +28,139 @@ const operations: Operation[] = [
     fields: {},
   },
   {
-    name: "Invite Colab",
-    endpoint: "/api/users/:user/invites",
-    method: "POST",
-    fields: { user: "input", thing: "input" },
+    name: "Delete Relation",
+    endpoint: "/api/users/relations",
+    method: "DELETE",
+    fields: { name: "input" },
   },
+  //Related Users
+  {
+    name: "Relate Users",
+    endpoint: "/api/users/relations/:relation",
+    method: "POST",
+    fields: { target: "input", relation: "input" },
+  },
+  {
+    name: "Get Related Users",
+    endpoint: "/api/users/relations/:relation",
+    method: "GET",
+    fields: { relation: "input" },
+  },
+  {
+    name: "Unrelate Users",
+    endpoint: "/api/users/relations/:relation",
+    method: "DELETE",
+    fields: { target: "input", relation: "input" },
+  },
+  //Replies
+  {
+    name: "Reply",
+    endpoint: "/api/posts/:id/replies",
+    method: "POST",
+    fields: { id: "input", content: "input" },
+  },
+  {
+    name: "Get Replies",
+    endpoint: "/api/posts/:id/replies",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
+    name: "Delete Reply",
+    endpoint: "/api/posts/:id/replies/:replyid",
+    method: "DELETE",
+    fields: { replyid: "input" },
+  },
+  //Collabs
+  {
+    name: "Join Collab",
+    endpoint: "/posts/:id/collaborators",
+    method: "POST",
+    fields: { id: "input" },
+  },
+  {
+    name: "Get Collabs",
+    endpoint: "/posts/:id/collaborators",
+    method: "GET",
+    fields: { id: "input" },
+  },
+  {
+    name: "Remove Collab",
+    endpoint: "/posts/:id/collaborators/:targetName",
+    method: "DELETE",
+    fields: { id: "input", targetName: "input" },
+  },
+  //Invites
+  {
+    name: "Invite User",
+    endpoint: "/api/invites/:username/:id",
+    method: "POST",
+    fields: { username: "input", id: "input" },
+  },
+  {
+    name: "Check Invites",
+    endpoint: "/api/users/invites",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Delete Invite",
+    endpoint: "/api/users/invites/:objectid",
+    method: "DELETE",
+    fields: { objectid: "input" },
+  },
+  //Community
+  {
+    name: "Create Community",
+    endpoint: "/api/communities",
+    method: "POST",
+    fields: { communityName: "input" },
+  },
+  {
+    name: "Get Communities",
+    endpoint: "/api/communities",
+    method: "GET",
+    fields: {},
+  },
+  {
+    name: "Delete Community",
+    endpoint: "/api/communities/:communityName",
+    method: "DELETE",
+    fields: { communityName: "input" },
+  },
+  //Community Users
+  {
+    name: "Join Community",
+    endpoint: "/api/communities/:communityName/users",
+    method: "POST",
+    fields: { communityName: "input" },
+  },
+  {
+    name: "Leave Community",
+    endpoint: "/api/communities/:communityName/users",
+    method: "DELETE",
+    fields: { communityName: "input" },
+  },
+  //Community Posts
+  {
+    name: "Post to Community",
+    endpoint: "/api/communities/:communityName/posts",
+    method: "POST",
+    fields: { communityName: "input", post: "input" },
+  },
+  {
+    name: "Get Community Posts",
+    endpoint: "/api/communities/:communityName/posts",
+    method: "GET",
+    fields: { communityName: "input" },
+  },
+  {
+    name: "Delete Community Post",
+    endpoint: "/api/communities/:communityName/posts",
+    method: "DELETE",
+    fields: { communityName: "input", post: "input" },
+  },
+  //Prebuilts
   {
     name: "Get Session User (logged in user)",
     endpoint: "/api/session",

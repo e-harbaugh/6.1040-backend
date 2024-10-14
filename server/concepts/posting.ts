@@ -33,11 +33,10 @@ export default class PostingConcept {
 
   async getPostByID(post_id: string) {
     const postWrapper = new ObjectId(post_id);
-    const post = await this.posts.readOne({ postWrapper });
-    if (post == null)
-      if (!post) {
-        throw new NotFoundError(`Post ${post_id} does not exist!`);
-      }
+    const post = await this.posts.readOne({ _id: postWrapper });
+    if (!post) {
+      throw new NotFoundError(`Post ${post_id} does not exist!`);
+    }
     return { msg: "Post Retrieved!", post: post };
   }
 

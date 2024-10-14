@@ -23,7 +23,7 @@ export default class InvitingConcept {
 
   async inviteUser(user: ObjectId, thing: ObjectId) {
     const _id = await this.invites.createOne({ user, thing });
-    return { msg: "Invite successfully created!", post: await this.invites.readOne({ _id }) };
+    return { msg: "Invite successfully created!", invite: await this.invites.readOne({ _id }) };
   }
 
   async deleteInvite(user: ObjectId, thing: ObjectId) {
@@ -37,6 +37,20 @@ export default class InvitingConcept {
   }
 
   async checkInvites(user: ObjectId) {
-    return await this.invites.readMany({ user: user }, { sort: { _id: -1 } });
+    return { msg: "Invites Retrieved", invites: await this.invites.readMany({ user: user }, { sort: { _id: -1 } }) };
+  }
+
+  async userHasInvite(user: ObjectId, thing: ObjectId) {
+    const invites = await this.invites.readMany({ user: user }, { sort: { _id: -1 } });
+    let found = false;
+    for (let i = 0; i < invites.length; i++) {
+      if (thing.toString() === invites[i].thing.toString()) {
+        found = true;
+      }
+    }
+    if (!found) {
+      throw new NotFoundError(thing.toString());
+    }
+    return { msg: "Invite Confirmed!" };
   }
 }

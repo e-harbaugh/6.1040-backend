@@ -1,9 +1,10 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { NotFoundError } from "./errors";
+import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface CommunityDoc extends BaseDoc {
   communityName: string;
+  owner: ObjectId;
 }
 
 export interface CommunityPostsDoc extends BaseDoc {
@@ -26,8 +27,13 @@ export default class ContentCommunityingConcept {
     this.communityPosts = new DocCollection<CommunityPostsDoc>(collectionName);
   }
 
-  async createCommunity(thing: ObjectId, communityName: string) {
-    const _id = await this.communities.createOne({ communityName });
+  async createCommunity(communityName: string, owner: ObjectId) {
+    //Make sure no other communities with name
+    const nameCheck = await this.communities.readMany({ communityName: communityName });
+    if (nameCheck) {
+      throw new NotAllowedError("Cannot duplicate community names");
+    }
+    const _id = await this.communities.createOne({ communityName, owner });
     return { msg: "community Created!", community: await this.communities.readOne({ _id }) };
   }
 
@@ -52,8 +58,16 @@ export default class ContentCommunityingConcept {
   }
 
   async getCommunities() {
-    const communitys = await this.communities.readMany({});
-    return { msg: "communitys Queried", communitys: communitys };
+    const communities = await this.communities.readMany({});
+    return { msg: "communites Queried", communities: communities };
+  }
+
+  async getCommunityByName(communityName: string) {
+    const community = await this.communities.readOne({ communityName: communityName });
+    if (community == null) {
+      throw new NotFoundError(communityName);
+    }
+    return { msg: "Community Returned", community: community };
   }
 
   async getCommunityPosts(communityName: string) {
@@ -64,5 +78,15 @@ export default class ContentCommunityingConcept {
     const oid = community._id;
     const communityPosts = await this.communityPosts.readMany({ community: oid });
     return { msg: "communitys Queried!", communityPosts: communityPosts };
+  }
+
+  async assertUserIsOwner(communityName: string, owner: ObjectId) {
+    const community = await this.communities.readOne({ communityName });
+    if (!community) {
+      throw new NotFoundError("Community Not found");
+    }
+    if (owner.id.toString() !== community.owner.id.toString()) {
+      throw new NotAllowedError("Must be owner to edit community");
+    }
   }
 }

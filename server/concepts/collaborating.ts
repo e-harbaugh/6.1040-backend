@@ -43,4 +43,9 @@ export default class CollaboratingConcept {
     }
     return true;
   }
+
+  async getColabs(object: ObjectId) {
+    const colabs = await this.collaborations.readMany({ object: object });
+    return { msg: "Recieved Colabs", colabs: colabs };
+  }
 }
