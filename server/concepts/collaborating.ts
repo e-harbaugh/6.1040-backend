@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { NotFoundError } from "./errors";
+import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface CollaborateDoc extends BaseDoc {
   object: ObjectId;
@@ -42,6 +42,13 @@ export default class CollaboratingConcept {
       return false;
     }
     return true;
+  }
+
+  async assertColab(user: ObjectId, object: ObjectId) {
+    const colab = await this.collaborations.readOne({ reciever: user, object: object });
+    if (colab == null) {
+      throw new NotAllowedError("User is not collaborator!");
+    }
   }
 
   async getColabs(object: ObjectId) {

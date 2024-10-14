@@ -74,19 +74,19 @@ const operations: Operation[] = [
   //Collabs
   {
     name: "Join Collab",
-    endpoint: "/posts/:id/collaborators",
+    endpoint: "/api/posts/:id/collaborators",
     method: "POST",
     fields: { id: "input" },
   },
   {
     name: "Get Collabs",
-    endpoint: "/posts/:id/collaborators",
+    endpoint: "/api/posts/:id/collaborators",
     method: "GET",
     fields: { id: "input" },
   },
   {
     name: "Remove Collab",
-    endpoint: "/posts/:id/collaborators/:targetName",
+    endpoint: "/api/posts/:id/collaborators/:targetName",
     method: "DELETE",
     fields: { id: "input", targetName: "input" },
   },

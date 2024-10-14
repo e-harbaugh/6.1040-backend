@@ -2,9 +2,9 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { RelationshipDoc } from "../server copy/concepts/relationshipping";
 import { Authing, Collaborating, ContentCommunitying, Friending, Inviting, Posting, PrivacyControlling, Relationshipping, Replying, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
+import { RelationshipDoc } from "./concepts/relationshipping";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
 
@@ -283,7 +283,11 @@ class Routes {
   async updatePost(session: SessionDoc, id: string, content?: string, options?: PostOptions) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    await Posting.assertAuthorIsUser(oid, user);
+    try {
+      await Posting.assertAuthorIsUser(oid, user);
+    } catch {
+      await Collaborating.assertColab(user, oid);
+    }
     return await Posting.update(oid, content, options);
   }
 
